@@ -49,7 +49,7 @@ def process_create_animal():
     }
 
     db.animals.insert_one(new_record)
-    return redirect(url_for('show_all_animals'))
+    return redirect(url_for('show_animals'))
 
 
 # "magic code" -- boilerplate
