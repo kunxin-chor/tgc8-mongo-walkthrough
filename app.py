@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for
 import pymongo
+from bson.objectid import ObjectId
 from dotenv import load_dotenv
 import os
 
@@ -44,11 +45,40 @@ def process_create_animal():
         'age': age,
         'species': species,
         'breed': breed,
-        'age': age,
         'microchip': microchip
     }
 
     db.animals.insert_one(new_record)
+    return redirect(url_for('show_animals'))
+
+
+@app.route('/animals/edit/<animal_id>')
+def show_edit_animal(animal_id):
+    animal = db.animals.find_one({
+        '_id': ObjectId(animal_id)
+    })
+    return render_template('edit_animal.template.html', animal=animal)
+
+
+@app.route('/animals/edit/<animal_id>', methods=["POST"])
+def process_edit_animal(animal_id):
+    name = request.form.get('animal_name')
+    species = request.form.get('species')
+    breed = request.form.get('breed')
+    age = float(request.form.get('age'))
+    microchip = request.form.get('microchip')
+
+    db.animals.update_one({
+        "_id": ObjectId(animal_id)
+    }, {
+        '$set': {
+            'name': name,
+            'species': species,
+            'breed': breed,
+            'age': age,
+            'microchip': microchip
+        }
+    })
     return redirect(url_for('show_animals'))
 
 
