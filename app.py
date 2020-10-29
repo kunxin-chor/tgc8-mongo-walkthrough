@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, flash
 import pymongo
 from bson.objectid import ObjectId
 from dotenv import load_dotenv
@@ -18,6 +18,7 @@ client = pymongo.MongoClient(MONGO_URL)
 db = client[DB_NAME]
 
 app = Flask(__name__)
+app.secret_key = os.environ.get('SECRET_KEY')
 
 
 @app.route('/animals')
@@ -55,9 +56,9 @@ def process_search_form():
         }
 
     if len(tags) > 0:
-        critera['tags'] = {        
-                '$in': tags
-            }
+        critera['tags'] = {
+            '$in': tags
+        }
 
     # put all the search critera into a list for easier processing
     searched_by = [animal_name, species]
@@ -80,8 +81,14 @@ def process_create_animal():
     name = request.form.get('animal_name')
     species = request.form.get('species')
     breed = request.form.get('breed')
-    age = float(request.form.get('age'))
+    age = request.form.get('age')
+    if age.isnumeric():
+        age = float(age)
     microchip = request.form.get('microchip')
+
+    if len(name) == 0:
+        flash("Name cannot be empty", "error")
+        return render_template('create_animal.template.html')
 
     new_record = {
         'name': name,
@@ -92,6 +99,7 @@ def process_create_animal():
     }
 
     db.animals.insert_one(new_record)
+    flash("New animal created successful", "success")
     return redirect(url_for('show_animals'))
 
 
