@@ -27,6 +27,49 @@ def show_animals():
                            all_animals=all_animals)
 
 
+@app.route('/animals/search')
+def show_search_form():
+    return render_template('search.template.html')
+
+
+@app.route('/animals/search', methods=['POST'])
+def process_search_form():
+    animal_name = request.form.get('animal_name')
+    species = request.form.get('species')
+    tags = request.form.getlist('tags')
+
+    print(tags)
+
+    critera = {}
+
+    if animal_name:
+        critera['name'] = {
+            '$regex': animal_name,
+            '$options': 'i'  # i means 'case-insensitive'
+        }
+
+    if species:
+        critera['species'] = {
+            '$regex': species,
+            '$options': 'i'
+        }
+
+    if len(tags) > 0:
+        critera['tags'] = {        
+                '$in': tags
+            }
+
+    # put all the search critera into a list for easier processing
+    searched_by = [animal_name, species]
+
+    print(critera)
+
+    results = db.animals.find(critera)
+    return render_template('display_results.template.html',
+                           all_animals=results,
+                           searched_by=searched_by)
+
+
 @app.route('/animals/create')
 def show_create_animal():
     return render_template('create_animal.template.html')
@@ -78,6 +121,24 @@ def process_edit_animal(animal_id):
             'age': age,
             'microchip': microchip
         }
+    })
+    return redirect(url_for('show_animals'))
+
+
+@app.route('/animals/delete/<animal_id>')
+def show_confirm_delete(animal_id):
+    # should use find_one if I am only expecting one result
+    animal_to_be_deleted = db.animals.find_one({
+        '_id': ObjectId(animal_id)
+    })
+    return render_template('show_confirm_delete.template.html',
+                           animal=animal_to_be_deleted)
+
+
+@app.route('/animals/delete/<animal_id>', methods=["POST"])
+def confirm_delete(animal_id):
+    db.animals.remove({
+        "_id": ObjectId(animal_id)
     })
     return redirect(url_for('show_animals'))
 

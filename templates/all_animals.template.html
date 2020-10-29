@@ -2,24 +2,7 @@
 
 {%block content %}
 <a href="{{ url_for('show_create_animal') }}" class="btn btn-success mt-1 mb-1">Add New Animal</a>
-<table class="table">
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Species</th>
-            <th>Breed</th>
-            <th>Microchip</th>
-            <th>Age</th>
-        </tr>
-        {%for each_animal in all_animals %}
-            <tr>
-                <td>{{each_animal.name}}</td> 
-                <td>{{each_animal.species}}</td>
-                <td>{{each_animal.breed}}</td>
-                <td>{{each_animal.microchip}}</td>
-                <td>{{each_animal.age}}</td>
-            </tr>
-        {%endfor%}
-    </thead>
-</table>
+
+{%include 'animal_listings.template.html' %}
+
 {%endblock%}
